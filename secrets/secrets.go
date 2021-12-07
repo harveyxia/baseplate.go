@@ -186,6 +186,30 @@ type Document struct {
 	Vault   Vault                    `json:"vault"`
 }
 
+// validate a single secret
+func validateSecret(key string, value GenericSecret) error {
+	var err error
+	if value.Type == SimpleType && notOnlySimpleSecret(value) {
+		err = TooManyFieldsError{
+			SecretType: SimpleType,
+			Key:        key,
+		}
+	}
+	if value.Type == VersionedType && notOnlyVersionedSecret(value) {
+		err = TooManyFieldsError{
+			SecretType: VersionedType,
+			Key:        key,
+		}
+	}
+	if value.Type == CredentialType && notOnlyCredentialSecret(value) {
+		err = TooManyFieldsError{
+			SecretType: CredentialType,
+			Key:        key,
+		}
+	}
+	return err
+}
+
 // Validate checks the Document for any errors that violate the Baseplate
 // specification.
 //
@@ -194,23 +218,8 @@ type Document struct {
 func (s *Document) Validate() error {
 	var batch errorsbp.Batch
 	for key, value := range s.Secrets {
-		if value.Type == SimpleType && notOnlySimpleSecret(value) {
-			batch.Add(TooManyFieldsError{
-				SecretType: SimpleType,
-				Key:        key,
-			})
-		}
-		if value.Type == VersionedType && notOnlyVersionedSecret(value) {
-			batch.Add(TooManyFieldsError{
-				SecretType: VersionedType,
-				Key:        key,
-			})
-		}
-		if value.Type == CredentialType && notOnlyCredentialSecret(value) {
-			batch.Add(TooManyFieldsError{
-				SecretType: CredentialType,
-				Key:        key,
-			})
+		if err := validateSecret(key, value); err != nil {
+			batch.Add(err)
 		}
 	}
 	return batch.Compile()
@@ -250,6 +259,38 @@ type Vault struct {
 	Token string `json:"token"`
 }
 
+// Take a GenericSecret and merge it into the typed secrets maps.
+func (s *Secrets) addSecret(key string, secret GenericSecret) error {
+	switch secret.Type {
+	case "simple":
+		simple, err := newSimpleSecret(&secret)
+		if err != nil {
+			return err
+		}
+		s.simpleSecrets[key] = simple
+	case "versioned":
+		versioned, err := newVersionedSecret(&secret)
+		if err != nil {
+			return err
+		}
+		s.versionedSecrets[key] = versioned
+	case "credential":
+		credential, err := newCredentialSecret(&secret)
+		if err != nil {
+			return err
+		}
+		s.credentialSecrets[key] = credential
+	default:
+		return fmt.Errorf(
+			"secrets.NewSecrets: encountered unknown secret type %q for secret %q",
+			secret.Type,
+			key,
+		)
+	}
+
+	return nil
+}
+
 // NewSecrets parses and validates the secret JSON provided by the reader.
 func NewSecrets(r io.Reader) (*Secrets, error) {
 	var secretsDocument Document
@@ -269,32 +310,46 @@ func NewSecrets(r io.Reader) (*Secrets, error) {
 		vault:             secretsDocument.Vault,
 	}
 	for key, secret := range secretsDocument.Secrets {
-		switch secret.Type {
-		case "simple":
-			simple, err := newSimpleSecret(&secret)
-			if err != nil {
-				return nil, err
-			}
-			secrets.simpleSecrets[key] = simple
-		case "versioned":
-			versioned, err := newVersionedSecret(&secret)
-			if err != nil {
-				return nil, err
-			}
-			secrets.versionedSecrets[key] = versioned
-		case "credential":
-			credential, err := newCredentialSecret(&secret)
-			if err != nil {
-				return nil, err
-			}
-			secrets.credentialSecrets[key] = credential
-		default:
-			return nil, fmt.Errorf(
-				"secrets.NewSecrets: encountered unknown secret type %q for secret %q",
-				secret.Type,
-				key,
-			)
+		if err = secrets.addSecret(key, secret); err != nil {
+			return nil, err
 		}
 	}
 	return secrets, nil
+}
+
+// Format for a Vault CSI mounted Secret.
+type VaultCsiDocument struct {
+	Secret GenericSecret `json:"data"`
+}
+
+func NewVaultCsiSecrets() (*Secrets, error) {
+	secrets := &Secrets{
+		simpleSecrets:     make(map[string]SimpleSecret),
+		versionedSecrets:  make(map[string]VersionedSecret),
+		credentialSecrets: make(map[string]CredentialSecret),
+	}
+	return secrets, nil
+}
+
+// Add a Vault CSI provided secret.
+func (s *Secrets) AddVaultCsiSecret(path string, r io.Reader) error {
+	var secretDocument VaultCsiDocument
+	err := json.NewDecoder(r).Decode(&secretDocument)
+	if err != nil {
+		return err
+	}
+
+	if err := validateSecret(path, secretDocument.Secret); err != nil {
+		return err
+	}
+
+	return s.addSecret(path, secretDocument.Secret)
+}
+
+// Delete a secret with the given path.
+func (s *Secrets) DeleteSecret(path string) {
+	// The secret should only exist in one of the maps.
+	delete(s.simpleSecrets, path)
+	delete(s.versionedSecrets, path)
+	delete(s.credentialSecrets, path)
 }

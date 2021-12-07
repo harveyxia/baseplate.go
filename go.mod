@@ -15,6 +15,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/joomcode/errorx v1.0.3
 	github.com/joomcode/redispipe v0.9.4
+	github.com/onsi/gomega v1.10.5
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/sony/gobreaker v0.4.1
 	go.uber.org/zap v1.15.0
