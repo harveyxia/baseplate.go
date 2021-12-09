@@ -61,7 +61,7 @@ func testDocument(raw map[string]GenericSecret) (Document, error) {
 //
 // If you do not provide a value for the key defined by JWTPubKeyPath,
 // then we will add a default secret for you.
-func NewTestSecrets(ctx context.Context, raw map[string]GenericSecret, middlewares ...SecretMiddleware) (*Store, *filewatcher.MockFileWatcher, error) {
+func NewTestSecrets(ctx context.Context, raw map[string]GenericSecret, middlewares ...SecretMiddleware) (Store, *filewatcher.MockFileWatcher, error) {
 	clone := make(map[string]GenericSecret, len(raw))
 	for k, v := range raw {
 		clone[k] = v
@@ -76,7 +76,7 @@ func NewTestSecrets(ctx context.Context, raw map[string]GenericSecret, middlewar
 		return nil, nil, err
 	}
 
-	store := &Store{
+	store := &store{
 		secretHandlerFunc: nopSecretHandlerFunc,
 	}
 	store.secretHandler(middlewares...)

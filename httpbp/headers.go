@@ -205,7 +205,7 @@ func (h AlwaysTrustHeaders) TrustSpan(r *http.Request) bool {
 // internet where you would not trust these headers but is also used internally
 // where you want to accept these headers.
 type TrustHeaderSignature struct {
-	secrets               *secrets.Store
+	secrets               secrets.Store
 	edgeContextSecretPath string
 	spanSecretPath        string
 }
@@ -213,7 +213,7 @@ type TrustHeaderSignature struct {
 // TrustHeaderSignatureArgs is used as input to create a new
 // TrustHeaderSignature.
 type TrustHeaderSignatureArgs struct {
-	SecretsStore          *secrets.Store
+	SecretsStore          secrets.Store
 	EdgeContextSecretPath string
 	SpanSecretPath        string
 }

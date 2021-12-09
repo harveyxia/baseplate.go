@@ -12,7 +12,7 @@ import (
 func Example() {
 	// Should be properly initialized in production code.
 	var (
-		store      *secrets.Store
+		store      secrets.Store
 		secretPath string
 	)
 

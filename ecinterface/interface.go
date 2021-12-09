@@ -26,7 +26,7 @@ type Interface interface {
 
 // FactoryArgs defines the args used in Factory.
 type FactoryArgs struct {
-	Store *secrets.Store
+	Store secrets.Store
 }
 
 // Factory is the callback used by baseplate.New to create the implementation.

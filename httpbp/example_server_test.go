@@ -26,7 +26,7 @@ type body struct {
 }
 
 type Handlers struct {
-	secrets    *secrets.Store
+	secrets    secrets.Store
 	redisAddrs []string
 }
 

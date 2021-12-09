@@ -41,8 +41,8 @@ func (c Config) getProvider() (Provider, error) {
 	}
 }
 
-// InitFromConfig returns a new *secrets.Store using the given context and config.
-func InitFromConfig(ctx context.Context, cfg Config) (*Store, error) {
+// InitFromConfig returns a new secrets.Store using the given context and config.
+func InitFromConfig(ctx context.Context, cfg Config) (Store, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
 	defer cancel()
 

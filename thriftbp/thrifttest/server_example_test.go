@@ -23,7 +23,7 @@ func (srv mockedBaseplateService) IsHealthy(ctx context.Context, req *baseplatet
 func ServiceTest(t *testing.T) {
 	// Initialize this properly in a real test,
 	// usually via secrets.NewTestSecrets.
-	var store *secrets.Store
+	var store secrets.Store
 
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)

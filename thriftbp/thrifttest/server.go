@@ -58,7 +58,7 @@ type ServerConfig struct {
 	Processor thrift.TProcessor
 
 	// Required, the secret store.
-	SecretStore *secrets.Store
+	SecretStore secrets.Store
 
 	// ServerConfig is an optional value, sane defaults will be chosen where
 	// appropriate.

@@ -26,7 +26,7 @@ const (
 	testTimeout = time.Millisecond * 100
 )
 
-func newSecretsStore(t testing.TB) *secrets.Store {
+func newSecretsStore(t testing.TB) secrets.Store {
 	t.Helper()
 
 	store, _, err := secrets.NewTestSecrets(

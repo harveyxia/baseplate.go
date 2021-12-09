@@ -66,7 +66,7 @@ type Baseplate interface {
 	Configer
 
 	EdgeContextImpl() ecinterface.Interface
-	Secrets() *secrets.Store
+	Secrets() secrets.Store
 }
 
 // Server is the primary interface for baseplate servers.
@@ -342,14 +342,14 @@ type impl struct {
 	closers *batchcloser.BatchCloser
 	cfg     Config
 	ecImpl  ecinterface.Interface
-	secrets *secrets.Store
+	secrets secrets.Store
 }
 
 func (bp impl) GetConfig() Config {
 	return bp.cfg
 }
 
-func (bp impl) Secrets() *secrets.Store {
+func (bp impl) Secrets() secrets.Store {
 	return bp.secrets
 }
 
@@ -371,7 +371,7 @@ func (bp impl) Close() error {
 // NewTestBaseplateArgs defines the args used by NewTestBaseplate.
 type NewTestBaseplateArgs struct {
 	Config          Config
-	Store           *secrets.Store
+	Store           secrets.Store
 	EdgeContextImpl ecinterface.Interface
 }
 

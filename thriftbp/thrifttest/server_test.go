@@ -19,7 +19,7 @@ func (srv BaseplateService) IsHealthy(ctx context.Context, _ *baseplatethrift.Is
 	return !srv.Fail, srv.Err
 }
 
-func newSecrets(t testing.TB) *secrets.Store {
+func newSecrets(t testing.TB) secrets.Store {
 	t.Helper()
 
 	store, _, err := secrets.NewTestSecrets(

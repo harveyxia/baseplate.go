@@ -35,7 +35,7 @@ var testSecrets = map[string]secrets.GenericSecret{
 	},
 }
 
-func newSecretsStore(t testing.TB) *secrets.Store {
+func newSecretsStore(t testing.TB) secrets.Store {
 	t.Helper()
 
 	store, _, err := secrets.NewTestSecrets(context.Background(), testSecrets)

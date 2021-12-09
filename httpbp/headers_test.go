@@ -36,7 +36,7 @@ func getHeaders() http.Header {
 	return headers
 }
 
-func getTrustHeaderSignature(secretsStore *secrets.Store) httpbp.TrustHeaderSignature {
+func getTrustHeaderSignature(secretsStore secrets.Store) httpbp.TrustHeaderSignature {
 	return httpbp.NewTrustHeaderSignature(httpbp.TrustHeaderSignatureArgs{
 		SecretsStore:          secretsStore,
 		EdgeContextSecretPath: "secret/http/edge-context-signature",

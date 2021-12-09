@@ -70,8 +70,8 @@ func TestNewStore(t *testing.T) {
 				}
 				defer store.Close()
 
-				if store.watcher.Get() == nil {
-					t.Fatal("expected secret store watcher to return secrets")
+				if vault, _ := store.GetVault(); vault.Token == "" {
+					t.Fatal("expected secret store watcher to return secrets data")
 				}
 			},
 		)
