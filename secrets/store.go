@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"context"
+	"github.com/reddit/baseplate.go/directorywatcher"
 	"io"
 
 	"github.com/reddit/baseplate.go/filewatcher"
@@ -163,4 +164,68 @@ func (s *store) GetCredentialSecret(path string) (CredentialSecret, error) {
 // This function always returns nil error.
 func (s *store) GetVault() (Vault, error) {
 	return s.getSecrets().vault, nil
+}
+
+type vaultCsiStore struct {
+	watcher directorywatcher.DirectoryWatcher
+
+	secretHandlerFunc SecretHandlerFunc
+}
+
+func (s *vaultCsiStore) Close() error {
+	s.watcher.Stop()
+	return nil
+}
+
+func (s *vaultCsiStore) AddMiddlewares(middlewares ...SecretMiddleware) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *vaultCsiStore) GetSimpleSecret(path string) (SimpleSecret, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *vaultCsiStore) GetVersionedSecret(path string) (VersionedSecret, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *vaultCsiStore) GetCredentialSecret(path string) (CredentialSecret, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *vaultCsiStore) GetVault() (Vault, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func NewVaultCsiStore(ctx context.Context, path string, logger log.Wrapper, middlewares ...SecretMiddleware) (Store, error) {
+	store := &vaultCsiStore{
+		secretHandlerFunc: nopSecretHandlerFunc,
+	}
+	store.secretHandler(middlewares...)
+
+	watcher, err := directorywatcher.New(ctx, directorywatcher.Config{
+		Path:     "",
+		OnCreate: nil,
+		OnRemove: nil,
+		Logger:   nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	store.directoryWatcher = watcher
+
+	return store, nil
+}
+
+// secretHandler creates the middleware chain.
+func (s *vaultCsiStore) secretHandler(middlewares ...SecretMiddleware) {
+	for _, m := range middlewares {
+		s.secretHandlerFunc = m(s.secretHandlerFunc)
+	}
 }
